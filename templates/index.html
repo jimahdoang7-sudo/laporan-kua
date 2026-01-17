@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan NR - Flask Version</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #e1bee7 100%); min-height: 100vh; font-family: 'Segoe UI', sans-serif; font-size: 0.85rem; }
+        .macos-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); padding: 20px; }
+        .stat-card h4 { font-size: 0.7rem; color: #7b1fa2; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .stat-card h2 { color: #e91e63; font-weight: 800; font-size: 1.8rem; margin: 0; }
+        .btn-macos { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px; color: #7b1fa2; font-weight: 600; padding: 7px 15px; transition: 0.3s; text-decoration: none; }
+        .active-macos { background: linear-gradient(90deg, #e91e63, #9c27b0) !important; color: white !important; box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3); }
+        .table-container { background: white; border-radius: 15px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .table { font-size: 0.75rem !important; vertical-align: middle; }
+        .table thead th { background-color: #9c27b0 !important; color: white !important; text-align: center !important; padding: 10px 5px !important; white-space: nowrap !important; border: none !important; }
+        .text-purple { color: #7b1fa2; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">🏛️ LAPORAN BULANAN & PNBP KUA TANGERANG</h2>
+
+    <div class="macos-card mb-4 text-center">
+        <form action="/" method="post" enctype="multipart/form-data" class="row g-2 justify-content-center">
+            <div class="col-md-6"><input type="file" name="file" class="form-control form-control-sm" accept=".xlsx"></div>
+            <div class="col-auto"><button type="submit" class="btn btn-primary btn-sm" style="background: linear-gradient(90deg, #f06292, #ba68c8); border: none;">🚀 Proses Data</button></div>
+        </form>
+    </div>
+
+    {% if rekap %}
+    <div class="row align-items-center mb-4 g-3">
+    <div class="col-lg-7">
+        <div class="d-flex flex-wrap gap-2">
+		<a href="/?tab=OVERVIEW" class="btn btn-macos {% if active_tab == 'OVERVIEW' %}active-macos{% endif %}">📊 Overview</a>
+		<a href="/?tab=PETUGAS" class="btn btn-macos {% if active_tab == 'PETUGAS' %}active-macos{% endif %}">👨‍💼 Petugas</a>
+		<a href="/?tab=PNBP" class="btn btn-macos {% if active_tab == 'PNBP' %}active-macos{% endif %}">💰 PNBP</a>
+		<a href="/?tab=ISBAT" class="btn btn-macos {% if active_tab == 'ISBAT' %}active-macos{% endif %}">⚖️ Isbat</a>
+		<a href="/?tab=WNA" class="btn btn-macos {% if active_tab == 'WNA' %}active-macos{% endif %}">🌍 WNA</a>
+	</div>
+    </div>
+
+    {% if active_tab == 'PETUGAS' %}
+    <div class="col-lg-5">
+        <div class="macos-card py-2 px-3 d-flex align-items-center">
+            <span class="text-purple small fw-bold me-2">🔎 PETUGAS:</span>
+            <select class="form-select form-select-sm border-0 bg-transparent fw-bold" 
+                    onchange="location.href='/?tab=PETUGAS&nama=' + encodeURIComponent(this.value)">
+                <option value="SEMUA" {% if selected_petugas == 'SEMUA' %}selected{% endif %}>-- SEMUA PETUGAS --</option>
+                {% for p in list_petugas %}
+                <option value="{{ p }}" {% if selected_petugas == p %}selected{% endif %}>{{ p }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% endif %}
+</div>
+	<div class="text-end mt-2">
+    {% if active_tab == 'PETUGAS' %}
+        <a href="/download_petugas?nama={{ selected_petugas }}" class="btn btn-sm text-white fw-bold shadow-sm"  
+           style="background: linear-gradient(90deg, #43a047, #66bb6a); border-radius: 10px; padding: 5px 15px; font-size: 0.75rem;">
+           📥 CETAK EXCEL: {{ selected_petugas }}
+        </a>
+    {% elif active_tab in ['PNBP', 'ISBAT', 'WNA'] %}
+        <a href="/download_laporan?tab={{ active_tab }}" class="btn btn-sm text-white fw-bold shadow-sm"  
+           style="background: linear-gradient(90deg, #1e88e5, #42a5f5); border-radius: 10px; padding: 5px 15px; font-size: 0.75rem;">
+           📥 CETAK LAPORAN {{ active_tab }}
+        </a>
+    {% endif %}
+</div>
+
+    <div class="text-center mb-4">
+    <h4 class="text-purple fw-bold mb-0">
+        {{ rekap.judul_kustom if rekap.judul_kustom else "REKAPITULASI DATA" }}
+    </h4>
+    <p class="text-muted small">Periode: {{ rekap.bulan }} {{ rekap.tahun }}</p>
+</	div>
+    
+    <div class="row g-3 mb-4 text-center">
+        <div class="col">
+            <div class="macos-card stat-card" style="background: linear-gradient(135deg, #1e88e5, #1565c0); border: none;">
+                <h4 style="color: rgba(255,255,255,0.8);">Total</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.total }}</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div class="macos-card stat-card" style="background: linear-gradient(135deg, #9c27b0, #7b1fa2); border: none;">
+                <h4 style="color: rgba(255,255,255,0.8);">Kantor</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.kantor }}</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div class="macos-card stat-card" style="background: linear-gradient(135deg, #e91e63, #c2185b); border: none;">
+                <h4 style="color: rgba(255,255,255,0.8);">Luar</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.luar }}</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div class="macos-card stat-card" style="background: linear-gradient(135deg, #ff9800, #f57c00); border: none;">
+                <h4 style="color: rgba(255,255,255,0.8);">Isbat</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.isbat }}</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div class="macos-card stat-card" style="background: linear-gradient(135deg, #00acc1, #00838f); border: none;">
+                <h4 style="color: rgba(255,255,255,0.8);">Nikah Campuran</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.wna if rekap.wna is not none else 0 }}</h2>
+            </div>
+        </div>
+    </div>
+
+    {% if chart_data %}
+    <div class="row mb-4">
+        <div class="col-md-11 mx-auto">
+            <div class="macos-card"><canvas id="petugasChart" style="max-height: 400px;"></canvas></div>
+        </div>
+    </div>
+    <script>
+        const ctx = document.getElementById('petugasChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ chart_data.labels | safe }},
+                datasets: [
+                    { label: '🏢 Kantor', data: {{ chart_data.kantor | safe }}, backgroundColor: '#9c27b0' },
+                    { label: '🚗 Luar', data: {{ chart_data.luar | safe }}, backgroundColor: '#e91e63' }
+                ]
+            },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+    </script>
+    {% endif %}
+
+    <div class="table-container shadow-sm mb-5">
+        <h6 class="mb-3 text-purple">📊 Detail: {{ active_tab }} {% if selected_petugas and selected_petugas != 'SEMUA' %}({{ selected_petugas }}){% endif %}</h6>
+        <div class="table-responsive">{{ table | safe }}</div>
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
