@@ -8,8 +8,8 @@ def get_col(df, keywords):
                 return c
     return None
 
-def render(df, bulan, tahun, pilih_petugas="SEMUA"):
-    """Fungsi Render dengan jaminan kolom 'No' ada di urutan pertama"""
+def render(df, bulan, tahun, pilih_petugas="SEMUA", pilih_lokasi="SEMUA"):
+    """Fungsi Render dengan tambahan filter lokasi"""
     col_petugas = get_col(df, ["NAMA PENGHULU HADIR", "NAMA PENGHULU", "PENGHULU HADIR"])
     col_lokasi = get_col(df, ["NIKAH DI", "TEMPAT NIKAH", "LOKASI"])
     col_daftar = get_col(df, ["NO PENDAFTARAN", "NOMOR PENDAFTARAN", "PENDAFTARAN"])
@@ -17,12 +17,18 @@ def render(df, bulan, tahun, pilih_petugas="SEMUA"):
     if not col_petugas:
         return [], {"labels": [], "kantor": [], "luar": []}, pd.DataFrame()
 
-    # 1. FILTER DATA PETUGAS
+    # 1. FILTER DATA PETUGAS (Logika Asli)
     df_f = df.copy()
     if pilih_petugas != "SEMUA":
         df_f = df_f[df_f[col_petugas] == pilih_petugas].copy()
 
-    # 2. DATA UNTUK GRAFIK & KARTU
+    # --- TAMBAHAN: FILTER LOKASI ---
+    if pilih_lokasi == "KANTOR":
+        df_f = df_f[(df_f[col_lokasi].str.contains("KANTOR|KUA", na=False)) & (~df_f[col_lokasi].str.contains("LUAR", na=False))]
+    elif pilih_lokasi == "LUAR KANTOR":
+        df_f = df_f[df_f[col_lokasi].str.contains("LUAR", na=False)]
+
+    # 2. DATA UNTUK GRAFIK & KARTU (Tetap pakai df asli agar list petugas lengkap)
     all_p = sorted(df[col_petugas].unique())
     summary_list = []
     labels, data_k, data_lk = [], [], []
