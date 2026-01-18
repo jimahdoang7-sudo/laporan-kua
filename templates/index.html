@@ -22,7 +22,7 @@
 <body>
 
 <div class="container py-5">
-    <h2 class="text-center mb-4">🏛️ LAPORAN BULANAN & PNBP KUA TANGERANG</h2>
+    <h2 class="text-center mb-4">🏛️ Aplikasi Laporan Peristiwa Nikah & Rujuk KUA Tangerang</h2>
 
     <div class="macos-card mb-4 text-center">
         <form action="/" method="post" enctype="multipart/form-data" class="row g-2 justify-content-center">
@@ -35,40 +35,43 @@
     <div class="row align-items-center mb-4 g-3">
     <div class="col-lg-7">
         <div class="d-flex flex-wrap gap-2">
-		<a href="/?tab=OVERVIEW" class="btn btn-macos {% if active_tab == 'OVERVIEW' %}active-macos{% endif %}">📊 Overview</a>
-		<a href="/?tab=PETUGAS" class="btn btn-macos {% if active_tab == 'PETUGAS' %}active-macos{% endif %}">👨‍💼 Petugas</a>
-		<a href="/?tab=PNBP" class="btn btn-macos {% if active_tab == 'PNBP' %}active-macos{% endif %}">💰 PNBP</a>
-		<a href="/?tab=ISBAT" class="btn btn-macos {% if active_tab == 'ISBAT' %}active-macos{% endif %}">⚖️ Isbat</a>
-		<a href="/?tab=WNA" class="btn btn-macos {% if active_tab == 'WNA' %}active-macos{% endif %}">🌍 WNA</a>
-	</div>
+			<a href="/?tab=OVERVIEW" class="btn btn-macos {% if active_tab == 'OVERVIEW' %}active-macos{% endif %}">📊 Overview</a>
+			<a href="/?tab=PETUGAS" class="btn btn-macos {% if active_tab == 'PETUGAS' %}active-macos{% endif %}">👨‍💼 Petugas</a>
+			<a href="/?tab=PNBP" class="btn btn-macos {% if active_tab == 'PNBP' %}active-macos{% endif %}">💰 PNBP</a>
+			<a href="/?tab=ISBAT" class="btn btn-macos {% if active_tab == 'ISBAT' %}active-macos{% endif %}">⚖️ Isbat</a>
+			<a href="/?tab=WNA" class="btn btn-macos {% if active_tab == 'WNA' %}active-macos{% endif %}">🌍 WNA</a>
+			<a href="/?tab=WALI_HAKIM" class="btn btn-macos {% if active_tab == 'WALI_HAKIM' %}active-macos{% endif %}">📜 Wali Hakim</a>
+		</div>
     </div>
 
     {% if active_tab == 'PETUGAS' %}
-    <div class="col-lg-5">
-        <div class="macos-card py-2 px-3 d-flex align-items-center">
-            <span class="text-purple small fw-bold me-2">🔎 PETUGAS:</span>
-            <select class="form-select form-select-sm border-0 bg-transparent fw-bold" 
-                    onchange="location.href='/?tab=PETUGAS&nama=' + encodeURIComponent(this.value)">
+    <div class="col-lg-6">
+        <div class="macos-card py-2 px-3 d-flex align-items-center gap-2">
+            <span class="text-purple small fw-bold">🔎 PETUGAS:</span>
+            <select id="selectPetugas" class="form-select form-select-sm border-0 bg-transparent fw-bold" onchange="gasFilter()">
                 <option value="SEMUA" {% if selected_petugas == 'SEMUA' %}selected{% endif %}>-- SEMUA PETUGAS --</option>
                 {% for p in list_petugas %}
                 <option value="{{ p }}" {% if selected_petugas == p %}selected{% endif %}>{{ p }}</option>
                 {% endfor %}
             </select>
+
+            <div style="width: 2px; height: 20px; background: #ddd;"></div>
+
+            <select id="selectLokasi" class="form-select form-select-sm border-0 bg-transparent fw-bold text-primary" onchange="gasFilter()">
+                <option value="SEMUA" {% if selected_lokasi == 'SEMUA' %}selected{% endif %}>📊 SEMUA PERISTIWA</option>
+                <option value="KANTOR" {% if selected_lokasi == 'KANTOR' %}selected{% endif %}>🏢 PERISTIWA KANTOR</option>
+                <option value="LUAR KANTOR" {% if selected_lokasi == 'LUAR KANTOR' %}selected{% endif %}>🚗 PERISTIWA LUAR KANTOR</option>
+            </select>
         </div>
     </div>
-    {% endif %}
-</div>
-	<div class="text-end mt-2">
-    {% if active_tab == 'PETUGAS' %}
-        <a href="/download_petugas?nama={{ selected_petugas }}" class="btn btn-sm text-white fw-bold shadow-sm"  
-           style="background: linear-gradient(90deg, #43a047, #66bb6a); border-radius: 10px; padding: 5px 15px; font-size: 0.75rem;">
-           📥 CETAK EXCEL: {{ selected_petugas }}
-        </a>
-    {% elif active_tab in ['PNBP', 'ISBAT', 'WNA'] %}
-        <a href="/download_laporan?tab={{ active_tab }}" class="btn btn-sm text-white fw-bold shadow-sm"  
-           style="background: linear-gradient(90deg, #1e88e5, #42a5f5); border-radius: 10px; padding: 5px 15px; font-size: 0.75rem;">
-           📥 CETAK LAPORAN {{ active_tab }}
-        </a>
+
+    <script>
+    function gasFilter() {
+        const nama = document.getElementById('selectPetugas').value;
+        const lokasi = document.getElementById('selectLokasi').value;
+        window.location.href = `/?tab=PETUGAS&nama=${encodeURIComponent(nama)}&lokasi=${encodeURIComponent(lokasi)}`;
+    }
+    </script>
     {% endif %}
 </div>
 
@@ -80,34 +83,40 @@
 </	div>
     
     <div class="row g-3 mb-4 text-center">
-        <div class="col">
+        <div class="col-md-2 col-6">
             <div class="macos-card stat-card" style="background: linear-gradient(135deg, #1e88e5, #1565c0); border: none;">
                 <h4 style="color: rgba(255,255,255,0.8);">Total</h4>
                 <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.total }}</h2>
             </div>
         </div>
-        <div class="col">
+        <div class="col-md-2 col-6">
             <div class="macos-card stat-card" style="background: linear-gradient(135deg, #9c27b0, #7b1fa2); border: none;">
                 <h4 style="color: rgba(255,255,255,0.8);">Kantor</h4>
                 <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.kantor }}</h2>
             </div>
         </div>
-        <div class="col">
+        <div class="col-md-2 col-6">
             <div class="macos-card stat-card" style="background: linear-gradient(135deg, #e91e63, #c2185b); border: none;">
                 <h4 style="color: rgba(255,255,255,0.8);">Luar</h4>
                 <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.luar }}</h2>
             </div>
         </div>
-        <div class="col">
+        <div class="col-md-2 col-6">
             <div class="macos-card stat-card" style="background: linear-gradient(135deg, #ff9800, #f57c00); border: none;">
                 <h4 style="color: rgba(255,255,255,0.8);">Isbat</h4>
                 <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.isbat }}</h2>
             </div>
         </div>
-        <div class="col">
+        <div class="col-md-2 col-6">
             <div class="macos-card stat-card" style="background: linear-gradient(135deg, #00acc1, #00838f); border: none;">
-                <h4 style="color: rgba(255,255,255,0.8);">Nikah Campuran</h4>
-                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.wna if rekap.wna is not none else 0 }}</h2>
+                <h4 style="color: rgba(255,255,255,0.8);">WNA</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.wna }}</h2>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="macos-card stat-card" style="background: linear-gradient(135deg, #43a047, #2e7d32); border: none;">
+                <h4 style="color: rgba(255,255,255,0.8);">Wali Hakim</h4>
+                <h2 style="color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">{{ rekap.wh }}</h2>
             </div>
         </div>
     </div>
